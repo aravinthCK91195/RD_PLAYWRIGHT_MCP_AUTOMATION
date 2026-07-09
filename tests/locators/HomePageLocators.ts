@@ -14,6 +14,6 @@ export class HomePageLocators {
     this.registerLink = page.getByRole('link', { name: 'Register' });
     this.loginLink = page.getByRole('link', { name: 'Log in' });
     this.shoppingCartLink = page.getByRole('link', { name: 'Shopping cart' });
-    this.welcomeBanner = page.locator('div.topic-block-title h1');
+    this.welcomeBanner = page.locator('div.topic-html-content').getByText('Welcome to our store');
   }
 }

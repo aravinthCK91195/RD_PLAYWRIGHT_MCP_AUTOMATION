@@ -10,10 +10,7 @@ export class HomePage {
     this.locators = new HomePageLocators(page);
   }
 
-  async goto() {
-    await this.page.goto('https://demowebshop.tricentis.com/');
-  }
-
+  
   async searchProduct(productName: string) {
     await this.locators.searchInput.fill(productName);
     await this.locators.searchButton.click();
