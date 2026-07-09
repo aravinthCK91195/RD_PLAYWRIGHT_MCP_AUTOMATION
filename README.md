@@ -86,7 +86,32 @@ Create Locator folder and there to store reusable locators
 
 # Page Object Model
 
-Get the locators from locator folder for calling functions in  Page Object classes.
+This repository uses a page object structure to separate selectors from page actions:
+
+- `tests/locators/`
+  - stores locator classes like `HomePageLocators.ts`
+  - defines reusable Playwright selectors in one place
+- `tests/pages/`
+  - stores page classes like `HomePage.ts`
+  - implements high-level actions and assertions using locator classes
+- `tests/spec/`
+  - stores test specs like `home.spec.ts`
+  - keeps tests short and readable
+  - instantiates page objects and calls page methods
+
+Example structure:
+
+- `tests/pages/HomePage.ts`
+- `tests/locators/HomePageLocators.ts`
+- `tests/spec/home.spec.ts`
+
+How it works:
+
+- locator classes expose `Locator` objects
+- page classes use those locators for actions like `searchProduct()` and `clickLogin()`
+- tests call page object methods instead of driving raw selectors directly
+
+Do not write long automation scripts directly inside test files.
 
 Do not write long automation scripts directly inside test files.
 
