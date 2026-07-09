@@ -10,12 +10,11 @@ export class HomePage {
     this.locators = new HomePageLocators(page);
   }
 
-  
-  async searchProduct(productName: string) {
-    await this.locators.searchInput.fill(productName);
-    await this.locators.searchButton.click();
+   static async init(page: Page) {
+    await expect(page).toHaveURL("/");
+    return new HomePage(page);
   }
-
+  
   async clickRegister() {
     await this.locators.registerLink.click();
   }

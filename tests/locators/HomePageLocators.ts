@@ -1,12 +1,12 @@
 import { Locator, Page } from '@playwright/test';
 
 export class HomePageLocators {
-  readonly searchInput: Locator;
-  readonly searchButton: Locator;
-  readonly registerLink: Locator;
-  readonly loginLink: Locator;
-  readonly shoppingCartLink: Locator;
-  readonly welcomeBanner: Locator;
+  private searchInput: Locator;
+  private searchButton: Locator;
+  private registerLink: Locator;
+  private loginLink: Locator;
+  private shoppingCartLink: Locator;
+  private welcomeBanner: Locator;
 
   constructor(page: Page) {
     this.searchInput = page.getByPlaceholder('Search store');

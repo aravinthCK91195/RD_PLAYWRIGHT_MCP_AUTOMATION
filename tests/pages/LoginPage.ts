@@ -8,10 +8,12 @@ export class LoginPage {
   constructor(page: Page) {
     this.page = page;
     this.locators = new LoginPageLocators(page);
+  
   }
 
-  async goto() {
-    await this.page.goto('/login');
+  static async init(page: Page) {
+    await expect(page).toHaveURL("/login");
+    return new LoginPage(page);
   }
 
   async login(username: string, password: string) {

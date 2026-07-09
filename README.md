@@ -35,6 +35,47 @@ The objective is to:
 
 ---
 
+
+# File Organization
+
+tests/
+pages/
+fixtures/
+utils/
+data/
+playwright.config.ts
+
+---
+
+
+# Naming Convention
+
+Test files
+
+```
+login.spec.ts
+checkout.spec.ts
+```
+
+Page Objects
+
+```
+LoginPage.ts
+HomePage.ts
+```
+
+Methods
+
+```
+login()
+
+searchProduct()
+
+addToCart()
+```
+
+---
+
 # Locator Strategy
 
 Always prefer locators in this order:
@@ -67,7 +108,7 @@ Example:
 test('User can login', async ({ page }) => {
 
     // Arrange
-    await page.goto('/');
+    await new HomePage(page);
 
     // Act
     await page.getByRole('button', { name: 'Login' }).click();
@@ -108,7 +149,7 @@ Example structure:
 How it works:
 
 - locator classes expose `Locator` objects
-- page classes use those locators for actions like `searchProduct()` and `clickLogin()`
+- page classes use those locators for actions like `clickLogin()`
 - tests call page object methods instead of driving raw selectors directly
 
 Do not write long automation scripts directly inside test files.
@@ -188,44 +229,6 @@ Avoid duplicated code.
 
 ---
 
-# File Organization
-
-tests/
-pages/
-fixtures/
-utils/
-data/
-playwright.config.ts
-
----
-
-# Naming Convention
-
-Test files
-
-```
-login.spec.ts
-checkout.spec.ts
-```
-
-Page Objects
-
-```
-LoginPage.ts
-HomePage.ts
-```
-
-Methods
-
-```
-login()
-
-searchProduct()
-
-addToCart()
-```
-
----
 
 # AI (MCP) Guidelines
 
