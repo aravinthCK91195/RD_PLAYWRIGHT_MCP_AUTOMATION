@@ -1,10 +1,10 @@
 import { Locator, Page } from '@playwright/test';
 
 export class LoginPageLocators {
-  private emailInput: Locator;
-  private passwordInput: Locator;
-  private loginButton: Locator;
-  private logoutLink: Locator;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly loginButton: Locator;
+  readonly logoutLink: Locator;
 
   constructor(page: Page) {
     this.emailInput = page.getByLabel('Email:');
