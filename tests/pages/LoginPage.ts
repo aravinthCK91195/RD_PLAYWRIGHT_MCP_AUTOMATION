@@ -1,28 +1,46 @@
 import { expect, Page } from '@playwright/test';
-import { LoginPageLocators } from '../locators/LoginPageLocators';
 
 export class LoginPage {
   private  page: Page;
-  private locators: LoginPageLocators;
+  
 
   constructor(page: Page) {
     this.page = page;
-    this.locators = new LoginPageLocators(page);
+    this.init(page);
   
   }
 
-  static async init(page: Page) {
+   async init(page: Page) {
     await expect(page).toHaveURL("/login");
-    return new LoginPage(page);
+    
   }
 
-  async login(username: string, password: string) {
-    await this.locators.emailInput.fill(username);
-    await this.locators.passwordInput.fill(password);
-    await this.locators.loginButton.click();
+  emailInput() {
+    return this.page.getByLabel('Email:');
+  }
+
+  passwordInput() {
+    return this.page.getByLabel('Password:');
+  }
+
+  loginButton() {
+    return this.page.locator('.login-button');
+  }
+
+  logoutLink() {
+    return this.page.getByRole('link', { name: 'Log out' });
+  }
+
+  async login(username: string, password: string, page: Page) {
+    await this.emailInput().fill(username);
+    await this.passwordInput().fill(password);
+
+    
+    await this.loginButton().click();
+    
   }
 
   async expectLoggedIn() {
-    await expect(this.locators.logoutLink).toBeVisible();
+    await expect(this.logoutLink()).toBeVisible();
   }
 }

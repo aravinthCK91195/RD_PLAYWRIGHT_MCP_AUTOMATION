@@ -1,26 +1,34 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
-import {HomePage} from '../pages/HomePage';
 
 const username = process.env.RDUSERNAME as string;
 const password = process.env.RDPASSWORD as string;
 
-
-
 test.beforeEach(async ({ page }) => {
   await page.goto('https://demowebshop.tricentis.com/');
-});
-
-test.describe('Demo Web Shop login', () => {
-  test('should log in with credentials from .env and show home page', async ({ page }) => {
-    const homePage = await HomePage.init(page);
+  const homePage = new HomePage(page);
     await homePage.expectHomePageVisible();
     await homePage.clickLogin();
-    
-    const loginPage = await LoginPage.init(page);    
-    await loginPage.login(username, password);
-    await loginPage.expectLoggedIn();
-    
 
+    const loginPage = new LoginPage(page);
+    await loginPage.login(username, password, page);
+    await loginPage.expectLoggedIn();
+});
+
+ test.describe('Demo Web Shop scenarios', () => {
+
+  test('TC001 should log in and browse the Books section', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.clickBooks();
+    await expect(page).toHaveURL(/books/i);
+
+    await homePage.selectFirstBook();
+    await expect(page).not.toHaveURL(/books/i);
+    await expect(page.getByRole('button', { name: 'Add to cart' }).first()).toBeVisible();
+
+    await page.waitForTimeout(20000); // Wait for 5 seconds to observe the result
   });
 });
+
+
