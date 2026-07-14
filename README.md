@@ -38,11 +38,15 @@ The objective is to:
 
 # File Organization
 
-tests/
-pages/
-fixtures/
-utils/
-data/
+utils(folder)
+|-BaseTests.ts
+model(folder)
+|-pages(folder)
+|-data(folder)
+tests(folder)
+|-demoWebShop.spec.ts
+
+
 playwright.config.ts
 
 ---
@@ -73,30 +77,38 @@ searchProduct()
 
 addToCart()
 ```
+ Always use camelCase for methods
+
+interfaces, enums,classes use pascalcase 
+
+
 
 ---
 
 # Locator Strategy
 
-Always prefer locators in this order:
+# Locator Strategy
 
-1. getByRole()
-2. getByLabel()
-3. getByPlaceholder()
-4. getByText()
-5. getByTestId()
-6. locator() using CSS
-7. XPath only as the last option
+Use Playwright locators in the following order of preference:
+
+1. `getByRole()` -  (Example) await page.getByRole('button', { name: 'Login' }).click();
+2. `getByLabel()`
+3. `getByPlaceholder()`
+4. `getByText()`
+5. `getByTestId()`
+
+If none of the above locator methods can uniquely identify the element, use:
+
+6. `locator()` with a CSS selector.
+
+Only if a stable CSS selector is not possible, use:
+
+7. `locator()` with an XPath expression.
 
 Avoid fragile XPath locators whenever possible.
 
-Example:
 
-```ts
-await page.getByRole('button', { name: 'Login' }).click();
-```
 
----
 
 # Test Structure
 
@@ -108,10 +120,10 @@ Example:
 test('User can login', async ({ page }) => {
 
     // Arrange
-    await new HomePage(page);
+   const homepage= await new HomePage(page);
 
     // Act
-    await page.getByRole('button', { name: 'Login' }).click();
+    homepage. await homePage.clickLogin();
 
     // Assert
     await expect(page).toHaveURL(/dashboard/);
@@ -142,9 +154,9 @@ This repository uses a page object structure to separate selectors from page act
 
 Example structure:
 
-- `tests/pages/HomePage.ts`
-- `tests/locators/HomePageLocators.ts`
-- `tests/spec/home.spec.ts`
+- `models/pages/HomePage.ts`
+-
+- `tests/home.spec.ts`
 
 How it works:
 
@@ -165,7 +177,7 @@ Use Playwright built-in assertions.
 Example
 
 ```ts
-await expect(locator).toBeVisible();
+await expect(locator).toEqual('Books')
 
 await expect(locator).toHaveText('Success');
 
