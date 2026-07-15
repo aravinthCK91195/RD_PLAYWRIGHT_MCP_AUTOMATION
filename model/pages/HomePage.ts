@@ -1,73 +1,77 @@
-import { expect, Page } from '@playwright/test';
-
+import { expect, Locator, Page } from '@playwright/test';
 
 export class HomePage {
   public page: Page;
 
   constructor(page: Page) {
     this.page = page;
-    this.init(page);
+    void this.init(page);
   }
 
-   async init(page: Page) {
+  async init(page: Page): Promise<void> {
     await expect(page).toHaveURL('/');
   }
 
-   loginLink() {
+  async loginLink(): Promise<Locator> {
     return this.page.getByRole('link', { name: 'Log in' });
   }
 
-  searchInput(){
+  async searchInput(): Promise<Locator> {
     return this.page.getByPlaceholder('Search store');
   }
 
-  searchButton(){
+  async searchButton(): Promise<Locator> {
     return this.page.getByRole('button', { name: 'Search' });
   }
 
-   registerLink() {
+  async registerLink(): Promise<Locator> {
     return this.page.getByRole('link', { name: 'Register' });
   }
 
-  shoppingCartLink() {
+  async shoppingCartLink(): Promise<Locator> {
     return this.page.getByRole('link', { name: 'Shopping cart' });
   }
 
-  welcomeBanner() {
+  async welcomeBanner(): Promise<Locator> {
     return this.page.getByText('Welcome to our store').first();
   }
 
-  booksLink() {
+  async booksLink(): Promise<Locator> {
     return this.page.getByRole('link', { name: 'Books' }).first();
   }
 
-  productTitleLinks() {
+  async productTitleLinks(): Promise<Locator> {
     return this.page.locator('h2.product-title a');
   }
 
-
-  async clickRegister() {
-    await this.registerLink().click();
+  async clickRegister(): Promise<void> {
+    const registerLink = await this.registerLink();
+    await registerLink.click();
   }
 
-  async clickLogin() {
-    await this.loginLink().click();
+  async clickLogin(): Promise<void> {
+    const loginLink = await this.loginLink();
+    await loginLink.click();
   }
 
-  async clickShoppingCart() {
-    await this.shoppingCartLink()   .click();
+  async clickShoppingCart(): Promise<void> {
+    const shoppingCartLink = await this.shoppingCartLink();
+    await shoppingCartLink.click();
   }
 
-  async clickBooks() {
-    await this.booksLink().click();
+  async clickBooks(): Promise<void> {
+    const booksLink = await this.booksLink();
+    await booksLink.click();
   }
 
-  async selectFirstBook() {
-    await this.productTitleLinks().first().click();
+  async selectFirstBook(): Promise<void> {
+    const productTitleLinks = await this.productTitleLinks();
+    await productTitleLinks.first().click();
   }
 
-  async expectHomePageVisible() {
-    await expect(this.welcomeBanner()).toBeVisible();
-    await expect(this.welcomeBanner()).toHaveText('Welcome to our store');
+  async expectHomePageVisible(): Promise<void> {
+    const welcomeBanner = await this.welcomeBanner();
+    await expect(welcomeBanner).toBeVisible();
+    await expect(welcomeBanner).toHaveText('Welcome to our store');
   }
 }

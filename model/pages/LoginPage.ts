@@ -1,46 +1,45 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export class LoginPage {
-  private  page: Page;
-  
+  private page: Page;
 
   constructor(page: Page) {
     this.page = page;
-    this.init(page);
-  
+    void this.init(page);
   }
 
-   async init(page: Page) {
-    await expect(page).toHaveURL("/login");
-    
+  async init(page: Page): Promise<void> {
+    await expect(page).toHaveURL('/login');
   }
 
-  emailInput() {
+  async emailInput(): Promise<Locator> {
     return this.page.getByLabel('Email:');
   }
 
-  passwordInput() {
+  async passwordInput(): Promise<Locator> {
     return this.page.getByLabel('Password:');
   }
 
-  loginButton() {
+  async loginButton(): Promise<Locator> {
     return this.page.locator('.login-button');
   }
 
-  logoutLink() {
+  async logoutLink(): Promise<Locator> {
     return this.page.getByRole('link', { name: 'Log out' });
   }
 
-  async login(username: string, password: string, page: Page) {
-    await this.emailInput().fill(username);
-    await this.passwordInput().fill(password);
+  async login(username: string, password: string): Promise<void> {
+    const emailInput = await this.emailInput();
+    const passwordInput = await this.passwordInput();
+    const loginButton = await this.loginButton();
 
-    
-    await this.loginButton().click();
-    
+    await emailInput.fill(username);
+    await passwordInput.fill(password);
+    await loginButton.click();
   }
 
-  async expectLoggedIn() {
-    await expect(this.logoutLink()).toBeVisible();
+  async expectLoggedIn(): Promise<void> {
+    const logoutLink = await this.logoutLink();
+    await expect(logoutLink).toBeVisible();
   }
 }

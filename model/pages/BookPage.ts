@@ -1,65 +1,107 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export class BookPage {
   private page: Page;
 
   constructor(page: Page) {
     this.page = page;
-    this.init(page);
   }
 
-  async init(page: Page) {
-    await expect(page).toHaveURL(/\/p\//);
+  async init(page: Page): Promise<void> {
+    await expect(page).toHaveURL(/\/books/);
   }
 
-  bookTitle() {
-    return this.page.locator('h1.product-name').first();
+  // Price Filter Locators
+  async priceFilterInput(): Promise<Locator> {
+    return this.page.locator('input[id*="price"]').first();
   }
 
-  bookPrice() {
-    return this.page.locator('[class*="price"]').first();
+  async priceFilterButton(): Promise<Locator> {
+    return this.page.getByRole('button', { name: /filter|apply/i });
   }
 
-  bookDescription() {
-    return this.page.locator('[class*="description"]').first();
+  // Books List Locators
+  async bookItems(): Promise<Locator> {
+    return this.page.locator('[class*="product-item"]');
   }
 
-  addToCartButton() {
-    return this.page.getByRole('button', { name: /Add to cart/i });
+  async bookPriceInList(index: number = 0): Promise<Locator> {
+    const books = await this.bookItems();
+    return books.nth(index).locator('[class*="price"]').first();
   }
 
-  addToWishlistButton() {
-    return this.page.getByRole('button', { name: /Add to wishlist/i });
+  async bookTitleInList(index: number = 0): Promise<Locator> {
+    const books = await this.bookItems();
+    return books.nth(index).locator('h2, h3, a').first();
   }
 
-  quantityInput() {
-    return this.page.locator('input[name="addtocart_1.EnteredQuantity"]');
+  async selectBookButton(index: number = 0): Promise<Locator> {
+    const books = await this.bookItems();
+    return books.nth(index).locator('a').first();
   }
 
-  backToBooks() {
-    return this.page.getByRole('link', { name: 'back to the product list' });
-  }
+  // Filter by price less than specified amount
+  async filterByPriceLessThan(maxPrice: number): Promise<void> {
+    const priceInput = this.page.locator('input[id*="price"], input[name*="price"], input[placeholder*="price" i]').first();
 
-  async addBookToCart(quantity: number = 1) {
-    if (quantity > 1) {
-      await this.quantityInput().fill(quantity.toString());
+    if (await priceInput.count()) {
+      await priceInput.fill(maxPrice.toString());
+
+      const filterButton = await this.priceFilterButton();
+      if (await filterButton.isVisible().catch(() => false)) {
+        await filterButton.click();
+      }
+
+      await this.page.waitForTimeout(1000);
     }
-    await this.addToCartButton().click();
   }
 
-  async addBookToWishlist() {
-    await this.addToWishlistButton().click();
+  // Select first available book and return its destination URL
+  async selectFirstBook(): Promise<string | null> {
+    const firstBook = await this.selectBookButton(0);
+    await expect(firstBook).toBeVisible();
+    const href = await firstBook.getAttribute('href');
+    await firstBook.click();
+    return href;
   }
 
-  async getBookTitle(): Promise<string | null> {
-    return await this.bookTitle().textContent();
+  // Select book by index
+  async selectBookByIndex(index: number): Promise<void> {
+    const book = await this.selectBookButton(index);
+    await expect(book).toBeVisible();
+    await book.click();
   }
 
-  async getBookPrice(): Promise<string | null> {
-    return await this.bookPrice().textContent();
+  // Get number of books displayed
+  async getBookCount(): Promise<number> {
+    const books = await this.bookItems();
+    return await books.count();
   }
 
-  async verifyBookPageLoaded(): Promise<void> {
-    await expect(this.bookTitle()).toBeVisible();
+  // Verify books are loaded
+  async verifyBooksLoaded(): Promise<void> {
+    const books = await this.bookItems();
+    await expect(books.first()).toBeVisible();
+  }
+
+  async getBookDetails(index: number = 0): Promise<{ title: string; price: string }> {
+    const titleLocator = await this.bookTitleInList(index);
+    const priceLocator = await this.bookPriceInList(index);
+    const title = (await titleLocator.textContent())?.trim() ?? '';
+    const price = (await priceLocator.textContent())?.trim() ?? '';
+
+    return { title, price };
+  }
+
+  // Get first book price
+  async getFirstBookPrice(): Promise<string> {
+    const priceLocator = await this.bookPriceInList(0);
+    return (await priceLocator.textContent())?.trim() ?? '';
+  }
+
+  // Get first book title
+  async getFirstBookTitle(): Promise<string> {
+    const titleLocator = await this.bookTitleInList(0);
+    return (await titleLocator.textContent())?.trim() ?? '';
   }
 }
