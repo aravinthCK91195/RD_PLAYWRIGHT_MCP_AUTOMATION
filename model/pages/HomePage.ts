@@ -1,36 +1,35 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class HomePage {
-  public page: Page;
-
+export class HomePage extends BasePage {
   constructor(page: Page) {
-    this.page = page;
-    void this.init(page);
+    super(page);
   }
 
   async init(page: Page): Promise<void> {
+    await super.init(page);
     await expect(page).toHaveURL('/');
   }
 
-  async loginLink(): Promise<Locator> {
-    return this.page.getByRole('link', { name: 'Log in' });
-  }
+  // async loginLink(): Promise<Locator> {
+  //   return this.page.getByRole('link', { name: 'Log in' });
+  // }
 
-  async searchInput(): Promise<Locator> {
-    return this.page.getByPlaceholder('Search store');
-  }
+  // async searchInput(): Promise<Locator> {
+  //   return this.page.getByPlaceholder('Search store');
+  // }
 
-  async searchButton(): Promise<Locator> {
-    return this.page.getByRole('button', { name: 'Search' });
-  }
+  // async searchButton(): Promise<Locator> {
+  //   return this.page.getByRole('button', { name: 'Search' });
+  // }
 
-  async registerLink(): Promise<Locator> {
-    return this.page.getByRole('link', { name: 'Register' });
-  }
+  // async registerLink(): Promise<Locator> {
+  //   return this.page.getByRole('link', { name: 'Register' });
+  // }
 
-  async shoppingCartLink(): Promise<Locator> {
-    return this.page.getByRole('link', { name: 'Shopping cart' });
-  }
+  // async shoppingCartLink(): Promise<Locator> {
+  //   return this.page.getByRole('link', { name: 'Shopping cart' });
+  // }
 
   async welcomeBanner(): Promise<Locator> {
     return this.page.getByText('Welcome to our store').first();

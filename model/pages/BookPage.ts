@@ -1,13 +1,13 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class BookPage {
-  private page: Page;
-
+export class BookPage extends BasePage {
   constructor(page: Page) {
-    this.page = page;
+    super(page);
   }
 
   async init(page: Page): Promise<void> {
+    await super.init(page);
     await expect(page).toHaveURL(/\/books/);
   }
 

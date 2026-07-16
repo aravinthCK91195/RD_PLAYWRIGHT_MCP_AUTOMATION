@@ -21,6 +21,10 @@ test.describe('Demo Web Shop - Purchase Book Flow', () => {
     // Navigate to home page
     await page.goto(baseURL);
 
+    console.log('Validating Demo Web Shop header via BasePage helper...');
+    await homePage.verifyDemoWebShopHeaderVisible(baseURL, false);
+    console.log('Demo Web Shop header validation passed.');
+
     // Login functionality
     await homePage.expectHomePageVisible();
     await homePage.clickLogin();

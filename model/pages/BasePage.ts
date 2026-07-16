@@ -148,4 +148,10 @@ export class BasePage {
   async waitForPageLoad() {
     await this.page.waitForLoadState('domcontentloaded');
   }
+
+
+
+
+
+
 }
