@@ -1,15 +1,15 @@
 import { expect, Page } from '@playwright/test';
+import { Routes } from '../data/constants';
 
 export class BasePage {
   protected page: Page;
 
   constructor(page: Page) {
     this.page = page;
-    void this.init(page);
   }
 
-  async init(page: Page) {
-    await expect(page).toHaveURL(/.*/);
+  async init(page: Page, route: Routes): Promise<void> {
+    await expect(page).toHaveURL(route);
   }
 
   // ----------------------------
@@ -25,7 +25,7 @@ export class BasePage {
   }
 
   shoppingCartLink() {
-    return this.page.getByRole('link', { name: 'Shopping cart' });
+    return this.page.getByRole('link', { name: /shopping cart/i }).filter({ hasNot: this.page.locator('.cart-qty') }).first();
   }
 
   wishlistLink() {

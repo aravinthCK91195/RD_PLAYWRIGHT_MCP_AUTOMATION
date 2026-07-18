@@ -1,14 +1,17 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { Routes } from '../data/constants';
 
 export class BookPage extends BasePage {
+  
+
   constructor(page: Page) {
     super(page);
+    void this.init(page,Routes.Books);
   }
 
-  async init(page: Page): Promise<void> {
-    await super.init(page);
-    await expect(page).toHaveURL(/\/books/);
+ async VerifyBooks(page: Page): Promise<void> {
+    await expect(page).toHaveURL(Routes.Books);
   }
 
   // Price Filter Locators
@@ -82,6 +85,22 @@ export class BookPage extends BasePage {
   async verifyBooksLoaded(): Promise<void> {
     const books = await this.bookItems();
     await expect(books.first()).toBeVisible();
+  }
+
+  async addProductToCart(): Promise<void> {
+    const addToCartButton = this.page.getByRole('button', { name: /add to cart/i }).first();
+    await expect(addToCartButton).toBeVisible();
+    await addToCartButton.click();
+  }
+
+  async expectProductAddedToCart(): Promise<void> {
+    const successMessage = this.page.locator('text=The product has been added to your shopping cart').first();
+    await expect(successMessage).toBeVisible();
+  }
+
+  async expectProductVisibleInCart(productTitle: string): Promise<void> {
+    const cartItem = this.page.locator('.cart-item-row, tr').filter({ hasText: productTitle }).first();
+    await expect(cartItem).toBeVisible();
   }
 
   async getBookDetails(index: number = 0): Promise<{ title: string; price: string }> {

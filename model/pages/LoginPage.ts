@@ -1,14 +1,13 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { Routes } from '../data/constants';
 
 export class LoginPage extends BasePage {
+
   constructor(page: Page) {
     super(page);
-  }
-
-  async init(page: Page): Promise<void> {
-    await super.init(page);
-    await expect(page).toHaveURL('/login');
+    
+    void this.init(page,Routes.Login);   
   }
 
   async emailInput(): Promise<Locator> {

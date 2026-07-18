@@ -1,15 +1,17 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { Routes } from '../data/constants';
 
 export class HomePage extends BasePage {
+  
+
   constructor(page: Page) {
     super(page);
-  }
+    
+    void this.init(page, Routes.Home);
+  }       
 
-  async init(page: Page): Promise<void> {
-    await super.init(page);
-    await expect(page).toHaveURL('/');
-  }
+  
 
   // async loginLink(): Promise<Locator> {
   //   return this.page.getByRole('link', { name: 'Log in' });

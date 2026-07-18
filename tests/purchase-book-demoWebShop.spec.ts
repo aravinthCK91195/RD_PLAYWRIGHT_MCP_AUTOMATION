@@ -1,40 +1,27 @@
-import { expect, test } from '@playwright/test';
-import { HomePage } from '../model/pages/HomePage';
-import { LoginPage } from '../model/pages/LoginPage';
-import { BookPage } from '../model/pages/BookPage';
+import { expect, test } from './fixtures';
+
+
+
+declare const process: {
+  env: Record<string, string | undefined>;
+};
 
 const username = process.env.RDUSERNAME as string;
 const password = process.env.RDPASSWORD as string;
 const baseURL = process.env.BASE_URL as string;
 
 test.describe('Demo Web Shop - Purchase Book Flow', () => {
-  let homePage: HomePage;
-  let loginPage: LoginPage;
-  let bookPage: BookPage;
 
-  test.beforeEach(async ({ page }) => {
-    // Arrange: Initialize page objects
-    homePage = new HomePage(page);
-    loginPage = new LoginPage(page);
-    bookPage = new BookPage(page);
 
-    // Navigate to home page
-    await page.goto(baseURL);
-
-    console.log('Validating Demo Web Shop header via BasePage helper...');
-    await homePage.verifyDemoWebShopHeaderVisible(baseURL, false);
-    console.log('Demo Web Shop header validation passed.');
-
-    // Login functionality
-    await homePage.expectHomePageVisible();
+  
+  test('TC001 - Login and Browse Books with Price Filter < $15', async ({ page, homePage, loginPage, bookPage }) => {
+    // Arrange
+    
     await homePage.clickLogin();
     await expect(page).toHaveURL(/\/login/);
     await loginPage.login(username, password);
     await loginPage.expectLoggedIn();
-  });
-
-  test('TC001 - Login and Browse Books with Price Filter < $15', async ({ page }) => {
-    // Arrange
+    
     const priceLimit = 15;
 
     // Act: Step 1 - Navigate to Books section
@@ -66,7 +53,15 @@ test.describe('Demo Web Shop - Purchase Book Flow', () => {
     const selectedBookPath = new URL(selectedBookHref as string, baseURL).pathname;
     await expect(page).toHaveURL(new RegExp(selectedBookPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     await bookPage.verifyBooksLoaded();
-    //await bookPage.verifyBookDetails(firstBookTitle, firstBookPrice);
+
+    // Act: Step 8 - Add the selected product to cart
+    await bookPage.addProductToCart();
+    await bookPage.expectProductAddedToCart();
+
+    // Act: Step 9 - Verify the product appears in the shopping cart
+    await homePage.clickShoppingCart();
+    await expect(page).toHaveURL(/cart/);
+    await bookPage.expectProductVisibleInCart(firstBookTitle);
 
     // Log successful test execution
     console.log(`✓ Successfully logged in to Demo Web Shop`);
@@ -75,6 +70,7 @@ test.describe('Demo Web Shop - Purchase Book Flow', () => {
     console.log(`✓ Found ${bookCount} books matching filter`);
     console.log(`✓ Selected book: "${firstBookTitle}" - Price: ${firstBookPrice}`);
     console.log(`✓ Book details page loaded successfully`);
+    console.log(`✓ Product added to the shopping cart`);
   });
 
 })
