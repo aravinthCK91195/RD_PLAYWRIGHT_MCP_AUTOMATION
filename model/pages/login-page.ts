@@ -6,8 +6,6 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    
-    void this.init(page,Routes.Login);   
   }
 
   async emailInput(): Promise<Locator> {

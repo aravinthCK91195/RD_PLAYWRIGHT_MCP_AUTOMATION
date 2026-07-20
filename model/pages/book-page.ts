@@ -7,7 +7,6 @@ export class BookPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    void this.init(page,Routes.Books);
   }
 
  async VerifyBooks(page: Page): Promise<void> {
@@ -28,19 +27,10 @@ export class BookPage extends BasePage {
     return this.page.locator('[class*="product-item"]');
   }
 
-  async bookPriceInList(index: number = 0): Promise<Locator> {
-    const books = await this.bookItems();
-    return books.nth(index).locator('[class*="price"]').first();
-  }
-
-  async bookTitleInList(index: number = 0): Promise<Locator> {
-    const books = await this.bookItems();
-    return books.nth(index).locator('h2, h3, a').first();
-  }
 
   async selectBookButton(index: number = 0): Promise<Locator> {
     const books = await this.bookItems();
-    return books.nth(index).locator('a').first();
+    return books.nth(index).locator('h2.product-title a, a.product-name, .product-title a').first();
   }
 
   // Filter by price less than specified amount
@@ -55,7 +45,7 @@ export class BookPage extends BasePage {
         await filterButton.click();
       }
 
-      await this.page.waitForTimeout(1000);
+      await expect(this.bookItems().first()).toBeVisible();
     }
   }
 
@@ -88,7 +78,7 @@ export class BookPage extends BasePage {
   }
 
   async addProductToCart(): Promise<void> {
-    const addToCartButton = this.page.getByRole('button', { name: /add to cart/i }).first();
+    const addToCartButton = this.page.locator('input[type="button"][value*="Add to cart"], button:has-text("Add to cart")').first();
     await expect(addToCartButton).toBeVisible();
     await addToCartButton.click();
   }
@@ -110,6 +100,55 @@ export class BookPage extends BasePage {
     const price = (await priceLocator.textContent())?.trim() ?? '';
 
     return { title, price };
+  }
+
+  async verifyProductDetailsLoaded(expectedTitle: string): Promise<void> {
+    const heading = this.page.locator('h1').first();
+    await expect(heading).toHaveText(new RegExp(expectedTitle, 'i'));
+  }
+
+  async bookTitleInList(index: number = 0): Promise<Locator> {
+    const books = await this.bookItems();
+    return books.nth(index).locator('h2.product-title a, .product-title a').first();
+  }
+
+  async bookPriceInList(index: number = 0): Promise<Locator> {
+    const books = await this.bookItems();
+    const book = books.nth(index);
+    const actualPriceLocator = book.locator('.prices .price.actual-price').first();
+    if (await actualPriceLocator.count()) {
+      return actualPriceLocator;
+    }
+    return book.locator('.prices .price, .price').first();
+  }
+
+  async getProductDetailPrice(): Promise<string> {
+    await this.page.waitForLoadState('domcontentloaded');
+    const priceText = await this.page.evaluate(() => {
+      const overview = document.querySelector('.product-essential, .product-overview');
+      if (!overview) return null;
+      
+      const priceDiv = overview.querySelector('.prices, .product-price');
+      if (!priceDiv) return null;
+      
+      const actualPrice = priceDiv.querySelector('.price.actual-price:not(.old-price)');
+      if (actualPrice) {
+        return actualPrice.textContent?.trim();
+      }
+      
+      const prices = Array.from(priceDiv.querySelectorAll('.price'));
+      if (prices.length > 0) {
+        return prices[prices.length - 1].textContent?.trim();
+      }
+      
+      return priceDiv.textContent?.trim();
+    });
+    
+    if (!priceText) {
+      throw new Error('Could not find product detail price');
+    }
+    
+    return priceText;
   }
 
   // Get first book price

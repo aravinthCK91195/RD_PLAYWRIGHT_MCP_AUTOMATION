@@ -7,9 +7,7 @@ export class HomePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    
-    void this.init(page, Routes.Home);
-  }       
+  }
 
   
 
