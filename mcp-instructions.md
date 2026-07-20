@@ -49,7 +49,7 @@ tests(folder)
 
 
 playwright.config.ts
-README.md
+mcp-instructions.md
 ---
 
 
@@ -58,12 +58,10 @@ README.md
 Test files
 
 ```
-login.spec.ts
-checkout.spec.ts
+purchase-book-demowebshop.spec.ts
 ```
 
 Page Objects
-
 ```
 LoginPage.ts
 HomePage.ts
@@ -142,9 +140,9 @@ This repository uses a page object structure to separate selectors from page act
   - keeps tests short and readable
   - instantiates page objects and calls page methods
 - `tests/fixtures.ts`
-  - stores custom created fixture for all pages  `cfixtures.ts`
+  - stores custom created fixture for all pages  `fixtures.ts`
   - implements fixtures and to create objects.    
-- `tests`
+
 
 Example structure:
 
