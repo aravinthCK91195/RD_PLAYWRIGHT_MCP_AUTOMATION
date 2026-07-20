@@ -1,7 +1,7 @@
 import { test as base, expect } from '@playwright/test';
-import { HomePage } from '../model/pages/HomePage';
-import { LoginPage } from '../model/pages/LoginPage';
-import { BookPage } from '../model/pages/BookPage';
+import { HomePage } from '../model/pages/home-page';
+import { LoginPage } from '../model/pages/login-page';
+import { BookPage } from '../model/pages/book-page';
  
 const baseURL = process.env.BASE_URL as string;
  

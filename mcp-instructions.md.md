@@ -39,16 +39,17 @@ The objective is to:
 # File Organization
 
 utils(folder)
-|-BaseTests.ts
+  |-common.ts
 model(folder)
-|-pages(folder)
-|-data(folder)
+  |-data(folder)
+  |-pages(folder)
 tests(folder)
-|-demoWebShop.spec.ts
+  |fixtures.ts
+  |-demoWebShop.spec.ts
 
 
 playwright.config.ts
-
+README.md
 ---
 
 
@@ -81,11 +82,6 @@ addToCart()
 
 interfaces, enums,classes use pascalcase 
 
-
-
----
-
-# Locator Strategy
 
 # Locator Strategy
 
@@ -131,26 +127,24 @@ test('User can login', async ({ page }) => {
 });
 ```
 
----
-
-# Locators
-
-Create Locator folder and there to store reusable locators 
-
 # Page Object Model
 
 This repository uses a page object structure to separate selectors from page actions:
 
-- `tests/locators/`
-  - stores locator classes like `HomePageLocators.ts`
-  - defines reusable Playwright selectors in one place
-- `tests/pages/`
+- `model/pages/`
   - stores page classes like `HomePage.ts`
   - implements high-level actions and assertions using locator classes
-- `tests/spec/`
-  - stores test specs like `home.spec.ts`
+- `model/data/`
+  - stores constants values in  `constants.ts`
+  - implements high-level enums   
+- `tests`
+  - stores test specs like `*.spec.ts` - based on end to end functional to create a test name
   - keeps tests short and readable
   - instantiates page objects and calls page methods
+- `tests/fixtures.ts`
+  - stores custom created fixture for all pages  `cfixtures.ts`
+  - implements fixtures and to create objects.    
+- `tests`
 
 Example structure:
 
@@ -160,7 +154,6 @@ Example structure:
 
 How it works:
 
-- locator classes expose `Locator` objects
 - page classes use those locators for actions like `clickLogin()`
 - tests call page object methods instead of driving raw selectors directly
 
