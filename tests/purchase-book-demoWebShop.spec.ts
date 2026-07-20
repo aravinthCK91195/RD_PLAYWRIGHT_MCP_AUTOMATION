@@ -10,7 +10,7 @@ const username = process.env.RDUSERNAME as string;
 const password = process.env.RDPASSWORD as string;
 const baseURL = process.env.BASE_URL as string;
 
-test.describe('Demo Web Shop - Purchase Book Flow', () => {
+test.describe('Demo Web Shop - Purchase Book Flow' , () => {
 
 
   
