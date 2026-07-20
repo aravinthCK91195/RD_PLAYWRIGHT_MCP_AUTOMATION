@@ -14,7 +14,7 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
 
 
   
-  test('TC001 - Login and Browse Books with Price Filter < $15', async ({ page, homePage, loginPage, bookPage, cartPage }) => {
+  test('TC001 - Login and Browse Books ', async ({ page, homePage, loginPage, bookPage, cartPage }) => {
     // Arrange
     await homePage.clickLogin();
     await expect(page).toHaveURL(/\/login/);

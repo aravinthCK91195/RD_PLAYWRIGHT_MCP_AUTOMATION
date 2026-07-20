@@ -16,6 +16,6 @@
     "@playwright/mcp": "^0.0.77"
   },
   "scripts": {
-    "test": "npx playwright test tests/purchase-book-demoWebShop.spec.ts"
+    "test": "npx playwright test tests/purchase-books-demowebshop.spec.ts"
   }
 }
