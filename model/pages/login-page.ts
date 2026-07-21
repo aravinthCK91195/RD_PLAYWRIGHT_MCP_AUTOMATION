@@ -39,4 +39,15 @@ export class LoginPage extends BasePage {
     const logoutLink = await this.logoutLink();
     await expect(logoutLink).toBeVisible();
   }
+
+  async clickLogout(): Promise<void> {
+    const logoutLink = await this.logoutLink();
+    await logoutLink.click();
+  }
+
+  async expectLoggedOut(): Promise<void> {
+    const logoutLink = await this.logoutLink();
+    await expect(logoutLink).toBeHidden();
+    await expect(this.loginLink()).toBeVisible();
+  }
 }

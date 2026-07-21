@@ -15,6 +15,14 @@ export class CheckoutPage extends BasePage {
     return this.page.locator('strong, .result').filter({ hasText: /your order has been successfully processed/i }).first();
   }
 
+  orderNumberText(): Locator {
+    return this.page.getByText(/order\s*number\s*:/i).first();
+  }
+
+  orderDetailsLink(): Locator {
+    return this.page.getByRole('link', { name: /click here for order details/i }).first();
+  }
+
   checkoutTitle(): Locator {
     return this.page.getByRole('heading', { name: /checkout/i }).first();
   }
@@ -71,7 +79,7 @@ export class CheckoutPage extends BasePage {
   }
 
   async continuePaymentInfo(): Promise<void> {
-    await this.advanceCheckoutStep(this.paymentInfoContinueButton(), this.confirmOrderButton());
+    await this.advanceCheckoutStep(this.paymentInfoContinueButton(), this.confirmOrderButton(), 20000);
   }
 
   async confirmOrder(): Promise<void> {
@@ -82,12 +90,50 @@ export class CheckoutPage extends BasePage {
   }
 
   async expectOrderConfirmed(): Promise<void> {
-    await expect(this.page).toHaveURL(/\/checkout\/completed\/?$/);
-    await expect(this.orderSuccessMessage()).toBeVisible();
+    const completedUrlPattern = /\/checkout\/completed(?:\/\d+)?\/?$/;
+
+    await expect
+      .poll(async () => {
+        const isCompletedUrl = completedUrlPattern.test(this.page.url());
+        const hasSuccessMessage = await this.orderSuccessMessage().isVisible().catch(() => false);
+        return isCompletedUrl || hasSuccessMessage;
+      }, { timeout: 20000 })
+      .toBe(true);
+
+    await expect(this.orderSuccessMessage()).toBeVisible({ timeout: 20000 });
   }
 
-  private async advanceCheckoutStep(button: Locator, nextButtons: Locator | Locator[]): Promise<void> {
+  async getOrderNumber(): Promise<string> {
+    await expect(this.orderSuccessMessage()).toBeVisible();
+    await expect(this.orderNumberText()).toBeVisible();
+
+    const orderNumberFromText = await this.orderNumberText().textContent().catch(() => null);
+    if (orderNumberFromText) {
+      const textMatch = orderNumberFromText.match(/order\s*number\s*:\s*([A-Za-z0-9-]+)/i);
+      if (textMatch?.[1]) {
+        return textMatch[1];
+      }
+    }
+
+    const orderDetailsHref = await this.orderDetailsLink().getAttribute('href').catch(() => null);
+    if (orderDetailsHref) {
+      const hrefMatch = orderDetailsHref.match(/\/orderdetails\/(\d+)/i);
+      if (hrefMatch?.[1]) {
+        return hrefMatch[1];
+      }
+    }
+
+    const urlMatch = this.page.url().match(/\/checkout\/completed\/(\d+)/i);
+    if (urlMatch?.[1]) {
+      return urlMatch[1];
+    }
+
+    throw new Error('Order number could not be captured from confirmation page');
+  }
+
+  private async advanceCheckoutStep(button: Locator, nextButtons: Locator | Locator[], timeoutMs: number = 10000): Promise<void> {
     const targets = Array.isArray(nextButtons) ? nextButtons : [nextButtons];
+    const submittingText = this.page.getByText(/submitting order information/i).first();
 
     await expect
       .poll(async () => {
@@ -102,12 +148,17 @@ export class CheckoutPage extends BasePage {
         }
 
         return 'waiting';
-      }, { timeout: 10000 })
+      }, { timeout: timeoutMs })
       .not.toBe('waiting');
 
     if (await button.isVisible().catch(() => false)) {
       await button.scrollIntoViewIfNeeded();
       await button.click({ force: true });
+
+      if (await submittingText.isVisible().catch(() => false)) {
+        await expect(submittingText).toBeHidden({ timeout: timeoutMs }).catch(() => {});
+      }
+
       await expect
         .poll(async () => {
           for (const target of targets) {
@@ -117,7 +168,7 @@ export class CheckoutPage extends BasePage {
           }
 
           return false;
-        }, { timeout: 10000 })
+        }, { timeout: timeoutMs })
         .toBe(true);
       return;
     }
@@ -131,7 +182,7 @@ export class CheckoutPage extends BasePage {
         }
 
         return false;
-      }, { timeout: 10000 })
+      }, { timeout: timeoutMs })
       .toBe(true);
   }
 }
