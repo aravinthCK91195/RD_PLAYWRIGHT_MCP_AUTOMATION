@@ -77,6 +77,43 @@ export class BookPage extends BasePage {
     await expect(books.first()).toBeVisible();
   }
 
+  async verifyProductDetailsLoaded(expectedTitle?: string): Promise<void> {
+    const titleLocator = this.page.locator('.product-name, .product-title, h1').first();
+    await expect(titleLocator).toBeVisible();
+    if (expectedTitle) {
+      await expect(titleLocator).toHaveText(new RegExp(expectedTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+    }
+  }
+
+  async getProductDetailPrice(): Promise<string> {
+    await this.page.waitForLoadState('domcontentloaded');
+    const priceText = await this.page.evaluate(() => {
+      const overview = document.querySelector('.product-essential, .product-overview');
+      if (!overview) return null;
+
+      const priceDiv = overview.querySelector('.prices, .product-price, .product-price .price, .product-price');
+      if (!priceDiv) return null;
+
+      const actualPrice = priceDiv.querySelector('.price.actual-price:not(.old-price), .price:not(.old-price)');
+      if (actualPrice) {
+        return actualPrice.textContent?.trim();
+      }
+
+      const prices = Array.from(priceDiv.querySelectorAll('.price'));
+      if (prices.length > 0) {
+        return prices[prices.length - 1].textContent?.trim();
+      }
+
+      return priceDiv.textContent?.trim();
+    });
+
+    if (!priceText) {
+      throw new Error('Could not find product detail price');
+    }
+
+    return priceText;
+  }
+
   async addProductToCart(): Promise<void> {
     const addToCartButton = this.page.locator('input[type="button"][value*="Add to cart"], button:has-text("Add to cart")').first();
     await expect(addToCartButton).toBeVisible();
@@ -102,11 +139,6 @@ export class BookPage extends BasePage {
     return { title, price };
   }
 
-  async verifyProductDetailsLoaded(expectedTitle: string): Promise<void> {
-    const heading = this.page.locator('h1').first();
-    await expect(heading).toHaveText(new RegExp(expectedTitle, 'i'));
-  }
-
   async bookTitleInList(index: number = 0): Promise<Locator> {
     const books = await this.bookItems();
     return books.nth(index).locator('h2.product-title a, .product-title a').first();
@@ -114,41 +146,10 @@ export class BookPage extends BasePage {
 
   async bookPriceInList(index: number = 0): Promise<Locator> {
     const books = await this.bookItems();
-    const book = books.nth(index);
-    const actualPriceLocator = book.locator('.prices .price.actual-price').first();
-    if (await actualPriceLocator.count()) {
-      return actualPriceLocator;
-    }
-    return book.locator('.prices .price, .price').first();
-  }
-
-  async getProductDetailPrice(): Promise<string> {
-    await this.page.waitForLoadState('domcontentloaded');
-    const priceText = await this.page.evaluate(() => {
-      const overview = document.querySelector('.product-essential, .product-overview');
-      if (!overview) return null;
-      
-      const priceDiv = overview.querySelector('.prices, .product-price');
-      if (!priceDiv) return null;
-      
-      const actualPrice = priceDiv.querySelector('.price.actual-price:not(.old-price)');
-      if (actualPrice) {
-        return actualPrice.textContent?.trim();
-      }
-      
-      const prices = Array.from(priceDiv.querySelectorAll('.price'));
-      if (prices.length > 0) {
-        return prices[prices.length - 1].textContent?.trim();
-      }
-      
-      return priceDiv.textContent?.trim();
-    });
-    
-    if (!priceText) {
-      throw new Error('Could not find product detail price');
-    }
-    
-    return priceText;
+    return books
+      .nth(index)
+      .locator('.prices .price.actual-price, .prices .price, .price')
+      .first();
   }
 
   // Get first book price
