@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test';
-import { Routes } from '../data/constants';
+import { Routes, Products } from '../data/constants';
 
 export class BasePage {
   protected page: Page;
@@ -8,14 +8,16 @@ export class BasePage {
     this.page = page;
   }
 
-  async init(page: Page, route: Routes): Promise<void> {
-    await expect(page).toHaveURL(route);
+  async VerifyUrl( route: Routes): Promise<void> {
+    console.log(`Verifying the landing URL: ${route}`);
+    await expect(this.page).toHaveURL(route);
   }
 
-  // ----------------------------
-  // Locators
-  // ----------------------------
-
+  async selectProduct(page:Page,product: Products): Promise<void> {
+  console.log(`Selecting product: ${product}`);
+  await this.page.getByRole('link', { name: product }).first().click();
+  }
+  
   registerLink() {
     return this.page.getByRole('link', { name: 'Register' });
   }
@@ -40,9 +42,6 @@ export class BasePage {
     return this.page.getByRole('button', { name: 'Search' });
   }
 
-  categoryLink(category: string) {
-    return this.page.getByRole('link', { name: category }).first();
-  }
 
   // ----------------------------
   // Actions
@@ -75,10 +74,6 @@ export class BasePage {
   async searchProduct(productName: string) {
     await this.enterSearchText(productName);
     await this.clickSearch();
-  }
-
-  async selectCategory(category: string) {
-    await this.categoryLink(category).click();
   }
 
   // ----------------------------
@@ -148,10 +143,4 @@ export class BasePage {
   async waitForPageLoad() {
     await this.page.waitForLoadState('domcontentloaded');
   }
-
-
-
-
-
-
 }

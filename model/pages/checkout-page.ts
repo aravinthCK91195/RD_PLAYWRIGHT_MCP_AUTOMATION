@@ -6,7 +6,7 @@ export class CheckoutPage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
-
+  
   checkoutStep(stepName: RegExp): Locator {
     return this.page.locator('li').filter({ has: this.page.getByRole('heading', { name: stepName }) }).first();
   }

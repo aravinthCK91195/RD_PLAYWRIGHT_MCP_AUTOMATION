@@ -8,6 +8,7 @@ export class LoginPage extends BasePage {
     super(page);
   }
 
+
   async emailInput(): Promise<Locator> {
     return this.page.getByLabel('Email:');
   }

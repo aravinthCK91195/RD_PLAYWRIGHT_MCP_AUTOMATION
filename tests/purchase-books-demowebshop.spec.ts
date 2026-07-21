@@ -1,37 +1,28 @@
 import { expect, test } from './fixtures';
+import { Routes,Products } from '../model/data/constants';
 
-
+const baseURL = process.env.BASE_URL as string;
 
 declare const process: {
   env: Record<string, string | undefined>;
 };
 
-const username = process.env.RDUSERNAME as string;
-const password = process.env.RDPASSWORD as string;
-const baseURL = process.env.BASE_URL as string;
 
 test.describe('Demo Web Shop - Purchase Book Flow' , () => {
-
-
   
-  test('TC001 - Login, Add Book, and Complete Checkout', async ({ page, homePage, loginPage, bookPage, cartPage, checkoutPage }) => {
-    // Arrange
-    await homePage.clickLogin();
-    await expect(page).toHaveURL(/\/login/);
-    await loginPage.login(username, password);
-    await loginPage.expectLoggedIn();
+  test('TC001 - Login, Add Book, and Complete Checkout', async ({ page,basePage, homePage, loginPage, bookPage, cartPage, checkoutPage }) => {   
     
-    
-
     // Act: Step 1 - Ensure the shopping cart is empty for a clean checkout state
     await homePage.clickShoppingCart();
-    await expect(page).toHaveURL(/\/cart/);
-    await cartPage.expectCartPageVisible();
+    await basePage.VerifyUrl(Routes.ShoppingCart);
     await cartPage.clearCart();
+  
 
-    // Act: Step 2 - Navigate to Books section
-    await homePage.clickBooks();
-    await expect(page).toHaveURL(/\/books/);
+    // Act: Step 2 - Navigate to Books section using Products enum
+    
+    await basePage.selectProduct(page, Products.Books);
+    await basePage.VerifyUrl(Routes.Books);
+    
 
     // Assert: Step 3 - Verify books page is loaded
     await bookPage.verifyBooksLoaded();
@@ -64,9 +55,9 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
     await bookPage.expectProductAddedToCart();
 
     // Act: Step 9 - Verify the product appears in the shopping cart with correct title, quantity, and price
-    await homePage.clickShoppingCart();
-    await expect(page).toHaveURL(/cart/);
-    await page.waitForTimeout(10000); // Wait for cart to update
+    await bookPage.clickShoppingCart();
+    await expect(page).toHaveURL(Routes.ShoppingCart);
+    //await page.waitForTimeout(10000); // Wait for cart to update
     await cartPage.expectCartPageVisible();
     await cartPage.expectCartItemDetails(firstBookTitle, 1, expectedUnitPrice);
 

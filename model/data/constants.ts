@@ -7,3 +7,10 @@ export enum Routes {
   OrderConfirmation = '/orderdetails',
 }
  
+
+export enum Products{
+
+  Books='Books',
+  Computers='Computers',
+  Electronics='Electronics',
+}

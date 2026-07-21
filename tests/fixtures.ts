@@ -4,10 +4,15 @@ import { LoginPage } from '../model/pages/login-page';
 import { BookPage } from '../model/pages/book-page';
 import { CartPage } from '../model/pages/cart-page';
 import { CheckoutPage } from '../model/pages/checkout-page';
+import { BasePage } from '../model/pages/base-page';
+import { Routes } from '../model/data/constants';
  
+const username = process.env.RDUSERNAME as string;
+const password = process.env.RDPASSWORD as string;
 const baseURL = process.env.BASE_URL as string;
  
 type DemoShopFixtures = {
+  basePage: BasePage;
   homePage: HomePage;
   loginPage: LoginPage;
   bookPage: BookPage;
@@ -16,6 +21,12 @@ type DemoShopFixtures = {
 };
  
 export const test = base.extend<DemoShopFixtures>({
+
+basePage: async ({ page }, use) => {
+    const basePage = new BasePage(page);
+    await use(basePage);
+  },
+
   homePage: async ({ page }, use) => {
     const homePage = new HomePage(page);
     await use(homePage);
@@ -42,9 +53,13 @@ export const test = base.extend<DemoShopFixtures>({
   },
 });
  
-test.beforeEach(async ({ page, homePage }) => {
+test.beforeEach(async ({ page, homePage, basePage,loginPage }) => {
   await page.goto(baseURL);
+  await basePage.VerifyUrl(Routes.Home);
   await homePage.expectHomePageVisible();
+  await homePage.clickLogin();
+  await loginPage.login(username, password);
+  await loginPage.expectLoggedIn();
 });
  
 test.afterEach(async ({ page }) => {

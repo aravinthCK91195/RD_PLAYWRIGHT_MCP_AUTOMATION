@@ -9,10 +9,6 @@ export class BookPage extends BasePage {
     super(page);
   }
 
- async VerifyBooks(page: Page): Promise<void> {
-    await expect(page).toHaveURL(Routes.Books);
-  }
-
   // Price Filter Locators
   async priceFilterInput(): Promise<Locator> {
     return this.page.locator('input[id*="price"]').first();
@@ -22,7 +18,7 @@ export class BookPage extends BasePage {
     return this.page.getByRole('button', { name: /filter|apply/i });
   }
 
-  // Books List Locators
+  
   async bookItems(): Promise<Locator> {
     return this.page.locator('[class*="product-item"]');
   }
@@ -31,22 +27,6 @@ export class BookPage extends BasePage {
   async selectBookButton(index: number = 0): Promise<Locator> {
     const books = await this.bookItems();
     return books.nth(index).locator('h2.product-title a, a.product-name, .product-title a').first();
-  }
-
-  // Filter by price less than specified amount
-  async filterByPriceLessThan(maxPrice: number): Promise<void> {
-    const priceInput = this.page.locator('input[id*="price"], input[name*="price"], input[placeholder*="price" i]').first();
-
-    if (await priceInput.count()) {
-      await priceInput.fill(maxPrice.toString());
-
-      const filterButton = await this.priceFilterButton();
-      if (await filterButton.isVisible().catch(() => false)) {
-        await filterButton.click();
-      }
-
-      await expect(this.bookItems().first()).toBeVisible();
-    }
   }
 
   // Select first available book and return its destination URL

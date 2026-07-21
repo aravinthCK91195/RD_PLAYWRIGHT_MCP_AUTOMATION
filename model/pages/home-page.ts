@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
-import { Routes } from '../data/constants';
+import { Routes,Products } from '../data/constants';
 
 export class HomePage extends BasePage {
   
@@ -9,34 +9,8 @@ export class HomePage extends BasePage {
     super(page);
   }
 
-  
-
-  // async loginLink(): Promise<Locator> {
-  //   return this.page.getByRole('link', { name: 'Log in' });
-  // }
-
-  // async searchInput(): Promise<Locator> {
-  //   return this.page.getByPlaceholder('Search store');
-  // }
-
-  // async searchButton(): Promise<Locator> {
-  //   return this.page.getByRole('button', { name: 'Search' });
-  // }
-
-  // async registerLink(): Promise<Locator> {
-  //   return this.page.getByRole('link', { name: 'Register' });
-  // }
-
-  // async shoppingCartLink(): Promise<Locator> {
-  //   return this.page.getByRole('link', { name: 'Shopping cart' });
-  // }
-
   async welcomeBanner(): Promise<Locator> {
     return this.page.getByText('Welcome to our store').first();
-  }
-
-  async booksLink(): Promise<Locator> {
-    return this.page.getByRole('link', { name: 'Books' }).first();
   }
 
   async productTitleLinks(): Promise<Locator> {
@@ -59,8 +33,8 @@ export class HomePage extends BasePage {
   }
 
   async clickBooks(): Promise<void> {
-    const booksLink = await this.booksLink();
-    await booksLink.click();
+    // Backwards compatible helper that uses the Products enum
+    await this.selectProduct(Products.Books);
   }
 
   async selectFirstBook(): Promise<void> {
