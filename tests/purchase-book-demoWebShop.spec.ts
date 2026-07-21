@@ -14,7 +14,7 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
 
 
   
-  test('TC001 - Login and Browse Books with Price Filter < $15', async ({ page, homePage, loginPage, bookPage, cartPage }) => {
+  test('TC001 - Login, Add Book, and Complete Checkout', async ({ page, homePage, loginPage, bookPage, cartPage, checkoutPage }) => {
     // Arrange
     await homePage.clickLogin();
     await expect(page).toHaveURL(/\/login/);
@@ -70,6 +70,22 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
     await cartPage.expectCartPageVisible();
     await cartPage.expectCartItemDetails(firstBookTitle, 1, expectedUnitPrice);
 
+    // Act: Step 10 - Accept the terms and proceed to checkout
+    await cartPage.agreeToTermsAndConditions();
+    await cartPage.clickCheckout();
+    await checkoutPage.expectCheckoutPageVisible();
+
+    // Act: Step 11 - Complete the checkout flow
+    await checkoutPage.continueBillingAddress();
+    await checkoutPage.continueShippingAddress();
+    await checkoutPage.continueShippingMethod();
+    await checkoutPage.continuePaymentMethod();
+    await checkoutPage.continuePaymentInfo();
+    await checkoutPage.confirmOrder();
+
+    // Assert: Step 12 - Verify the order was confirmed
+    await checkoutPage.expectOrderConfirmed();
+
     // Log successful test execution
     console.log(`✓ Successfully logged in to Demo Web Shop`);
     console.log(`✓ Navigated to Books section`);
@@ -78,6 +94,7 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
     console.log(`✓ Book details page loaded successfully`);
     console.log(`✓ Product added to the shopping cart`);
     console.log(`✓ Verified selected book, quantity, and price in cart`);
+    console.log(`✓ Completed checkout and confirmed the order`);
   });
 
 

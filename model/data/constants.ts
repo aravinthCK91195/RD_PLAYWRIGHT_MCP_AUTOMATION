@@ -3,7 +3,7 @@ export enum Routes {
   Login = '/login',
   Books = '/books',
   ShoppingCart = '/cart',
-  Checkout = '/checkout',
+  Checkout = '/onepagecheckout',
   OrderConfirmation = '/orderdetails',
 }
  

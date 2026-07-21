@@ -3,6 +3,7 @@ import { HomePage } from '../model/pages/home-page';
 import { LoginPage } from '../model/pages/login-page';
 import { BookPage } from '../model/pages/book-page';
 import { CartPage } from '../model/pages/cart-page';
+import { CheckoutPage } from '../model/pages/checkout-page';
  
 const baseURL = process.env.BASE_URL as string;
  
@@ -11,6 +12,7 @@ type DemoShopFixtures = {
   loginPage: LoginPage;
   bookPage: BookPage;
   cartPage: CartPage;
+  checkoutPage: CheckoutPage;
 };
  
 export const test = base.extend<DemoShopFixtures>({
@@ -32,6 +34,11 @@ export const test = base.extend<DemoShopFixtures>({
   cartPage: async ({ page }, use) => {
     const cartPage = new CartPage(page);
     await use(cartPage);
+  },
+
+  checkoutPage: async ({ page }, use) => {
+    const checkoutPage = new CheckoutPage(page);
+    await use(checkoutPage);
   },
 });
  

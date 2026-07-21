@@ -7,6 +7,14 @@ export class CartPage extends BasePage {
     super(page);
   }
 
+  termsAndConditionsCheckbox(): Locator {
+    return this.page.locator('input#termsofservice, input[name="termsofservice"], input[type="checkbox"][name*="term"]').first();
+  }
+
+  checkoutButton(): Locator {
+    return this.page.locator('input.checkout-button, input[name="checkout"], input[value="Checkout"], button.checkout-button, button:has-text("Checkout")').first();
+  }
+
   async navigateToCart(): Promise<void> {
     await this.page.goto(Routes.ShoppingCart);
     await this.page.waitForLoadState('domcontentloaded');
@@ -57,6 +65,23 @@ export class CartPage extends BasePage {
     await updateButton.click();
 
     await expect(this.page.locator('table.cart tbody tr.cart-item-row')).toHaveCount(0);
+  }
+
+  async agreeToTermsAndConditions(): Promise<void> {
+    const checkbox = this.termsAndConditionsCheckbox();
+    await expect(checkbox).toBeVisible();
+    await checkbox.scrollIntoViewIfNeeded();
+
+    if (!(await checkbox.isChecked().catch(() => false))) {
+      await checkbox.check({ force: true });
+    }
+  }
+
+  async clickCheckout(): Promise<void> {
+    const button = this.checkoutButton();
+    await expect(button).toBeVisible();
+    await button.scrollIntoViewIfNeeded();
+    await button.click({ force: true });
   }
 
   async getCartItemTitle(productTitle: string): Promise<string> {
