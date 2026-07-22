@@ -1,288 +1,165 @@
 # RD_PLAYWRIGHT_MCP_AUTOMATION
-# Playwright MCP Instructions
+# MCP Engineering Instructions
 
-## Project Overview
+## Purpose
 
-This project uses Playwright with TypeScript for end-to-end web automation testing.
+This document defines how MCP-assisted coding should work for this repository.
 
-The objective is to:
-- Build maintainable and reusable test automation.
-- Follow Playwright best practices.
-- Use AI assistance through MCP wherever applicable.
-- Generate reliable and readable test code.
+Goals:
+- Produce stable, readable, and reusable Playwright TypeScript automation.
+- Preserve the current Page Object + fixtures architecture.
+- Enforce consistent locator, wait, assertion, and naming standards.
+- Minimize flaky tests and duplicate logic.
 
----
-
-# Technology Stack
+## Current Stack
 
 - Language: TypeScript
-- Framework: Playwright
-- Test Runner: Playwright Test
-- Package Manager: npm
-- IDE: Visual Studio Code
+- Test framework: @playwright/test
+- Browser automation: Playwright
+- Package manager: npm
+- Environment config: dotenv
+- MCP package: @playwright/mcp
 
----
+## Project Structure (Source of Truth)
 
-# Coding Standards
+- model/data/constants.ts
+- model/pages/*.ts
+- tests/fixtures.ts
+- tests/*.spec.ts
+- utils/common.ts
+- playwright.config.ts
 
-## General
+## Runtime and Configuration Rules
 
-- Use TypeScript.
-- Write clean and modular code.
-- Avoid duplicate code.
-- Use async/await consistently.
-- Keep functions small and reusable.
+- Base URL must come from BASE_URL in .env, with fallback in playwright.config.ts.
+- Credentials must come from environment variables:
+  - RDUSERNAME
+  - RDPASSWORD
+- Never hardcode credentials in tests or page objects.
+- Keep trace setting as configured in playwright.config.ts unless explicitly asked to change.
 
----
+## Naming and Code Style
 
+- File names: kebab-case for project files, e.g. purchase-books-demowebshop.spec.ts.
+- Classes, enums, interfaces, and types: PascalCase.
+- Methods and variables: camelCase.
+- Prefer explicit method names describing behavior, e.g. expectCheckoutPageVisible.
+- Keep methods focused on one user action or one assertion intent.
 
-# File Organization
+## Page Object Model Rules
 
-utils(folder)
-  |-common.ts
-model(folder)
-  |-data(folder)
-  |-pages(folder)
-tests(folder)
-  |fixtures.ts
-  |-demoWebShop.spec.ts
+- Put reusable UI behavior in model/pages classes, not in spec files.
+- Keep selectors and interaction details inside page objects.
+- Keep test files focused on scenario orchestration and business assertions.
+- Reuse existing fixtures from tests/fixtures.ts instead of creating ad-hoc objects in tests.
+- Extend base patterns already used in BasePage and CommonTests; do not introduce parallel patterns unless necessary.
 
+## Locator Strategy
 
-playwright.config.ts
-mcp-instructions.md
----
+Use this priority order:
+1. getByRole
+2. getByLabel
+3. getByPlaceholder
+4. getByText
+5. getByTestId
+6. locator with stable CSS
+7. XPath only as last resort
 
+Rules:
+- Prefer accessibility-friendly locators.
+- Avoid brittle selectors tied to styling/layout.
+- Use .first() only when the UI intentionally has duplicate matching nodes.
 
-# Naming Convention
+## Wait and Synchronization Strategy
 
-Test files
+- Rely on Playwright auto-waiting and web-first assertions.
+- Prefer expect(locator).toBeVisible()/toBeEnabled() over fixed delays.
+- Avoid waitForTimeout except for unavoidable transient UI behavior and document why.
+- After navigation-triggering actions, verify destination with URL assertion.
 
-```
-purchase-book-demowebshop.spec.ts
-```
+## URL and Route Verification Rules
 
-Page Objects
-```
-LoginPage.ts
-HomePage.ts
-```
+- Use Routes enum from model/data/constants.ts for known routes.
+- Keep Products and Routes aligned when using lookups like Routes[product].
+- Verify URL after navigation actions, not before.
+- For dynamic PDP URLs, verify using resolved pathname/regex as implemented in current specs.
 
-Methods
+## Test Authoring Standards
 
-```
-login()
+- Use test.step to split major business phases.
+- Follow Arrange -> Act -> Assert in each step.
+- Keep one primary business scenario per test.
+- Prefer deterministic assertions over console-only validation.
+- Use chaining only when it improves readability; avoid overly complex promise chains.
 
-searchProduct()
+## Assertions Standards
 
-addToCart()
-```
- Always use camelCase for methods
+- Use Playwright expect APIs only.
+- Assert critical checkpoints:
+  - page URL
+  - page-level visibility markers
+  - cart item correctness
+  - checkout completion and order number
+- Add assertion context through clear step names and method names.
 
-interfaces, enums,classes use pascalcase 
+## Reusability and Duplication Controls
 
+- Before adding any method, check existing methods in:
+  - BasePage
+  - page-specific classes under model/pages
+  - CommonTests
+- If logic is shared by 2+ specs, move it into a reusable page/helper method.
+- Do not duplicate locators across page classes for the same element.
 
-# Locator Strategy
+## MCP Behavior Contract (For AI-Assisted Changes)
 
-Use Playwright locators in the following order of preference:
+When MCP generates or edits code in this repo, it must:
+- Use TypeScript compatible with existing project setup.
+- Reuse existing fixtures and page objects first.
+- Keep edits minimal and localized to requested behavior.
+- Preserve current public method contracts unless refactor is explicitly requested.
+- Add or update assertions when changing navigation or checkout behavior.
+- Run targeted Playwright tests for changed flows when possible.
 
-1. `getByRole()` -  (Example) await page.getByRole('button', { name: 'Login' }).click();
-2. `getByLabel()`
-3. `getByPlaceholder()`
-4. `getByText()`
-5. `getByTestId()`
+MCP must avoid:
+- Introducing new frameworks or architectural patterns.
+- Replacing working locator strategies with weaker ones.
+- Adding hard waits as a default solution.
+- Embedding secrets or environment data into source code.
 
-If none of the above locator methods can uniquely identify the element, use:
+## Recommended Commands
 
-6. `locator()` with a CSS selector.
+- Run default test command:
 
-Only if a stable CSS selector is not possible, use:
-
-7. `locator()` with an XPath expression.
-
-Avoid fragile XPath locators whenever possible.
-
-
-
-
-# Test Structure
-
-Follow Arrange → Act → Assert.
-
-Example:
-
-```ts
-test('User can login', async ({ page }) => {
-
-    // Arrange
-   const homepage= await new HomePage(page);
-
-    // Act
-    homepage. await homePage.clickLogin();
-
-    // Assert
-    await expect(page).toHaveURL(/dashboard/);
-
-});
-```
-
-# Page Object Model
-
-This repository uses a page object structure to separate selectors from page actions:
-
-- `model/pages/`
-  - stores page classes like `HomePage.ts`
-  - implements high-level actions and assertions using locator classes
-- `model/data/`
-  - stores constants values in  `constants.ts`
-  - implements high-level enums   
-- `tests`
-  - stores test specs like `*.spec.ts` - based on end to end functional to create a test name
-  - keeps tests short and readable
-  - instantiates page objects and calls page methods
-- `tests/fixtures.ts`
-  - stores custom created fixture for all pages  `fixtures.ts`
-  - implements fixtures and to create objects.    
-
-
-Example structure:
-
-- `models/pages/HomePage.ts`
--
-- `tests/home.spec.ts`
-
-How it works:
-
-- page classes use those locators for actions like `clickLogin()`
-- tests call page object methods instead of driving raw selectors directly
-
-Do not write long automation scripts directly inside test files.
-
-Do not write long automation scripts directly inside test files.
-
----
-
-# Assertions
-
-Use Playwright built-in assertions.
-
-Example
-
-```ts
-await expect(locator).toEqual('Books')
-
-await expect(locator).toHaveText('Success');
-
-await expect(page).toHaveURL(/dashboard/);
+```bash
+npm test
 ```
 
----
+- Run books flow:
 
-# Wait Strategy
-
-Prefer auto waiting.
-
-Use
-
-```ts
-await expect(locator).toBeVisible();
+```bash
+npx playwright test tests/purchase-books-demowebshop.spec.ts --reporter=line
 ```
 
-instead of
+- Run computers flow:
 
-```ts
-waitForTimeout()
+```bash
+npx playwright test tests/purchase-computers-demowebshop.spec.ts --reporter=line
 ```
 
-Avoid unnecessary hard waits.
+## Quality Gate Before Finalizing Changes
 
----
+Checklist:
+- No TypeScript errors in changed files.
+- No duplicate or brittle locators introduced.
+- URL/state assertions updated for navigation changes.
+- Fixtures/page objects reused correctly.
+- Relevant spec(s) executed or explicitly documented if not run.
 
-# Test Data
+## Definition of Done
 
-Keep test data separate from test logic.
-
-Use:
-- JSON
-- Environment variables
-- Fixtures
-
-Avoid hardcoded values whenever possible.
-
----
-
-# Error Handling
-
-Provide meaningful assertion messages.
-
-Capture screenshots on failures.
-
-Enable tracing for debugging.
-
----
-
-# Reusability
-
-Create helper functions for:
-- Login
-- Navigation
-- Form filling
-- Common validations
-
-Avoid duplicated code.
-
----
-
-
-# AI (MCP) Guidelines
-
-When generating automation code:
-
-- Follow Playwright best practices.
-- Use semantic locators.
-- Reuse existing Page Objects.
-- Do not duplicate methods.
-- Keep methods reusable.
-- Generate TypeScript code only.
-- Add comments only when necessary.
-- Prefer readability over complexity.
-
----
-
-# When Creating New Tests
-
-Always:
-
-- Verify existing Page Objects first.
-- Reuse utilities.
-- Reuse fixtures.
-- Add proper assertions.
-- Keep one business scenario per test.
-
----
-
-# Code Review Checklist
-
-Before completing automation:
-
-- No duplicate locators
-- No hard waits
-- Proper assertions
-- Uses async/await
-- Uses Page Objects
-- Uses semantic locators
-- Readable code
-- Modular methods
-- Reusable functions
-
----
-
-# Goal
-
-Generate production-ready Playwright automation that is:
-
-- Clean
-- Reusable
-- Maintainable
-- Scalable
-- Easy to understand
-- Based on Playwright best practices
+A change is done when it is:
+- Functionally correct for the target flow.
+- Readable and maintainable by the existing team.
+- Aligned with current architecture and conventions.
+- Verified by targeted test execution.

@@ -39,7 +39,7 @@ export class LoginPage extends BasePage {
     await this.expectLoggedIn();
     
     // Wait for navigation to home page
-    await this.page.waitForURL(Routes.Home);
+    await this.VerifyUrl(Routes.Home);
     
     // Return HomePage instance for promise chaining
     return new HomePage(this.page);

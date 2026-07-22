@@ -16,46 +16,57 @@ export class BasePage extends CommonTests {
   async VerifyUrl<T extends BasePage>(route: Routes, pageClassOrInstance?: (new (page: Page) => T) | T): Promise<T | void> {
     console.log(`Verifying the landing URL: ${route}`);
     await expect(this.page).toHaveURL(route);
-    
+
     if (!pageClassOrInstance) {
-      return; // No page provided - backward compatible
+      return;
     }
 
-    // Check if it's a page instance (has 'page' property) or a class constructor
     if ('page' in pageClassOrInstance) {
-      // It's an instance - return it for chaining
       return pageClassOrInstance as T;
-    } else {
-      // It's a class constructor - create and return new instance
-      return new (pageClassOrInstance as new (page: Page) => T)(this.page);
     }
+
+    return new (pageClassOrInstance as new (page: Page) => T)(this.page);
   }
 
-  
-
   // Overload 1: Backward compatible signature used by existing tests.
-  async selectProduct(page: Page, product: Products): Promise<Page>;
+  async selectProduct(page: Page, product: Products, route: Routes): Promise<Page>;
   // Overload 2: Chain-ready signature that returns a typed page object.
   async selectProduct<T extends BasePage>(product: Products, pageClassOrInstance: (new (page: Page) => T) | T): Promise<T>;
+  async selectProduct<T extends BasePage>(product: Products, route: Routes, pageClassOrInstance: (new (page: Page) => T) | T): Promise<T>;
   async selectProduct<T extends BasePage>(
     pageOrProduct: Page | Products,
-    productOrPageClass: Products | ((new (page: Page) => T) | T)
+    productOrRouteOrPageClass: Products | Routes | ((new (page: Page) => T) | T),
+    routeOrPageClass?: Routes | ((new (page: Page) => T) | T)
   ): Promise<Page | T> {
     const isLegacySignature = typeof pageOrProduct !== 'string';
-    const product = (isLegacySignature ? productOrPageClass : pageOrProduct) as Products;
+    const product = (isLegacySignature ? productOrRouteOrPageClass : pageOrProduct) as Products;
+
+    let expectedRoute: Routes;
+    if (isLegacySignature) {
+      expectedRoute = (routeOrPageClass as Routes) ?? Routes[product];
+    } else {
+      expectedRoute = typeof productOrRouteOrPageClass === 'string'
+        ? (productOrRouteOrPageClass as Routes)
+        : Routes[product];
+    }
 
     console.log(`Selecting product: ${product}`);
     await this.chooseProduct(product).click();
     await this.page.waitForLoadState('domcontentloaded');
+    await this.VerifyUrl(expectedRoute);
 
     if (isLegacySignature) {
       return pageOrProduct as Page;
     }
 
-    const pageClassOrInstance = productOrPageClass as (new (page: Page) => T) | T;
+    const pageClassOrInstance = (typeof productOrRouteOrPageClass === 'string'
+      ? routeOrPageClass
+      : productOrRouteOrPageClass) as (new (page: Page) => T) | T;
+
     if ('page' in pageClassOrInstance) {
       return pageClassOrInstance as T;
     }
+
     return new (pageClassOrInstance as new (page: Page) => T)(this.page);
   }
 

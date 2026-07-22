@@ -2,6 +2,8 @@ export enum Routes {
   Home = '/',
   Login = '/login',
   Books = '/books',
+  Computers = '/computers',
+  Electronics = '/electronics',
   ShoppingCart = '/cart',
   Wishlist = '/wishlist',
   Checkout = '/onepagecheckout',

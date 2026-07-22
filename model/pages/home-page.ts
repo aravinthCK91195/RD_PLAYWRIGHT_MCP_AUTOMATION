@@ -35,8 +35,13 @@ export class HomePage extends BasePage {
   // Chaining method - returns CartPage for promise chaining
   async clickShoppingCart(): Promise<CartPage> {
     const shoppingCartLink = await this.shoppingCartLink();
-    await shoppingCartLink.click();
-    await this.page.waitForLoadState('domcontentloaded');
+
+    await Promise.all([
+      shoppingCartLink.click(),
+      this.VerifyUrl(Routes.ShoppingCart),
+      this.page.waitForLoadState('domcontentloaded'),
+    ]);
+
     return new CartPage(this.page);
   }
 

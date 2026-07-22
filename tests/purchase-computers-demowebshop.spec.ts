@@ -23,8 +23,7 @@ test.describe('Demo Web Shop - Purchase Computer Flow' , () => {
 
     await test.step('TC02 - Open Computers Section and Select Subcategory', async () => {
       // One-liner chaining: Navigate -> Verify -> clearCart
-      await (await homePage.clickShoppingCart()
-      .then(cp => cp.VerifyUrl(Routes.ShoppingCart, cp)))
+      await (await homePage.clickShoppingCart())
       .clearCart();
 
       await computersPage.selectCategory(Products.Computers, ComputerSubcategories.Desktops);

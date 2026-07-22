@@ -24,13 +24,10 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
     await test.step('TC03 - Open Books Section and Select Product', async () => {
       
       
-      await (await homePage.clickShoppingCart()
-      .then(cp => cp.VerifyUrl(Routes.ShoppingCart, cp)))
+      await (await homePage.clickShoppingCart())
       .clearCart();
 
-      await (await basePage
-      .selectProduct(Products.Books, bookPage)
-      .then(bp => bp.VerifyUrl(Routes.Books, bp)))
+      await (await basePage.selectProduct(Products.Books, bookPage))
       .verifyBooksLoaded();
 
       bookCount = await bookPage.getBookCount();
@@ -66,12 +63,7 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
 
     await test.step('TC05 - Navigate to Shopping Cart', async () => {
      
-      await (await bookPage.clickShoppingCart()
-      .then(cp => cp.VerifyUrl(Routes.ShoppingCart, cp))
-      .then(async cp => {
-        await cp.expectCartPageVisible();
-        return cp;
-      }))
+      await (await bookPage.clickShoppingCart())
       .expectCartItemDetails(firstBookTitle, 1, expectedUnitPrice);
       console.log('✓ Verified selected product in shopping cart');
     });
@@ -81,7 +73,6 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
       await cartPage
       .agreeToTermsAndConditions()
       .then(() => cartPage.clickCheckout())
-      .then(cp => cp.VerifyUrl(Routes.Checkout, cp))
       .then(async cp => {
         await cp.expectCheckoutPageVisible();
         await cp.continueBillingAddress();
