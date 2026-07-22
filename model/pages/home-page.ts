@@ -34,7 +34,7 @@ export class HomePage extends BasePage {
 
   async clickBooks(): Promise<void> {
     // Backwards compatible helper that uses the Products enum
-    await this.selectProduct(Products.Books);
+    await this.selectProduct(this.page,Products.Books);
   }
 
   async selectFirstBook(): Promise<void> {
