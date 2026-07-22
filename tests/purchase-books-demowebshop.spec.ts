@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { Routes,Products } from '../model/data/constants';
+import { Routes,Products } from '../model/data/constants';;
 
 const baseURL = process.env.BASE_URL as string;
 const username = process.env.RDUSERNAME as string;
@@ -12,7 +12,7 @@ declare const process: {
 
 test.describe('Demo Web Shop - Purchase Book Flow' , () => {
   
-  test('TC001 - Login, Add Book, and Complete Checkout', async ({ page,basePage, homePage, loginPage, bookPage, cartPage, checkoutPage }) => {   
+  test('TC001 - Login, Add Book, and Complete Checkout', async ({ page,basePage, homePage, loginPage, bookPage, cartPage, checkoutPage,computersPage }) => {   
     let bookCount = 0;
     let firstBookTitle = '';
     let firstBookPrice = '';
@@ -22,13 +22,16 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
     
 
     await test.step('TC03 - Open Books Section and Select Product', async () => {
-      await homePage.clickShoppingCart();
-      await basePage.VerifyUrl(Routes.ShoppingCart);
-      await cartPage.clearCart();
+      
+      
+      await (await homePage.clickShoppingCart()
+      .then(cp => cp.VerifyUrl(Routes.ShoppingCart, cp)))
+      .clearCart();
 
-      await basePage.selectProduct(page, Products.Books);
-      await basePage.VerifyUrl(Routes.Books);
-      await bookPage.verifyBooksLoaded();
+      await (await basePage
+      .selectProduct(Products.Books, bookPage)
+      .then(bp => bp.VerifyUrl(Routes.Books, bp)))
+      .verifyBooksLoaded();
 
       bookCount = await bookPage.getBookCount();
       expect(bookCount).toBeGreaterThan(0);
@@ -54,42 +57,59 @@ test.describe('Demo Web Shop - Purchase Book Flow' , () => {
       const priceMatches = Array.from(detailPriceText.matchAll(/(\d+(?:\.\d+)?)/g));
       expectedUnitPrice = priceMatches.length > 0 ? Number(priceMatches[priceMatches.length - 1][0]) : 0;
 
-      await bookPage.addProductToCart();
-      await bookPage.expectProductAddedToCart();
+      // One-liner chaining: Add -> Verify success
+      await bookPage
+      .addProductToCart()
+      .then(() => bookPage.expectProductAddedToCart());
       console.log('✓ Product added to the shopping cart');
     });
 
     await test.step('TC05 - Navigate to Shopping Cart', async () => {
-      await bookPage.clickShoppingCart();
-      await expect(page).toHaveURL(Routes.ShoppingCart);
-      await cartPage.expectCartPageVisible();
-      await cartPage.expectCartItemDetails(firstBookTitle, 1, expectedUnitPrice);
+     
+      await (await bookPage.clickShoppingCart()
+      .then(cp => cp.VerifyUrl(Routes.ShoppingCart, cp))
+      .then(async cp => {
+        await cp.expectCartPageVisible();
+        return cp;
+      }))
+      .expectCartItemDetails(firstBookTitle, 1, expectedUnitPrice);
       console.log('✓ Verified selected product in shopping cart');
     });
 
     await test.step('TC06 - Complete Checkout', async () => {
-      await cartPage.agreeToTermsAndConditions();
-      await cartPage.clickCheckout();
-      await checkoutPage.expectCheckoutPageVisible();
-      await checkoutPage.continueBillingAddress();
-      await checkoutPage.continueShippingAddress();
-      await checkoutPage.continueShippingMethod();
-      await checkoutPage.continuePaymentMethod();
-      await checkoutPage.continuePaymentInfo();
-      await checkoutPage.confirmOrder();
-      await checkoutPage.expectOrderConfirmed();
+      // One-liner chaining: Agree terms -> Checkout -> Complete order
+      await cartPage
+      .agreeToTermsAndConditions()
+      .then(() => cartPage.clickCheckout())
+      .then(cp => cp.VerifyUrl(Routes.Checkout, cp))
+      .then(async cp => {
+        await cp.expectCheckoutPageVisible();
+        await cp.continueBillingAddress();
+        await cp.continueShippingAddress();
+        await cp.continueShippingMethod();
+        await cp.continuePaymentMethod();
+        await cp.continuePaymentInfo();
+        await cp.confirmOrder();
+        return cp;
+      })
+      .then(cp => cp.expectOrderConfirmed());
       console.log('✓ Checkout completed successfully');
     });
 
     await test.step('TC07 - Save and Verify Order Number', async () => {
-      orderNumber = await checkoutPage.getOrderNumber();
-      expect(orderNumber).toBeTruthy();
+      // One-liner chaining: Capture -> Assert
+      orderNumber = await checkoutPage.getOrderNumber().then(capturedOrderNumber => {
+        expect(capturedOrderNumber).toBeTruthy();
+        return capturedOrderNumber;
+      });
       console.log(`✓ Captured order number: ${orderNumber}`);
     });
 
     await test.step('TC08 - Logout', async () => {
-      await loginPage.clickLogout();
-      await loginPage.expectLoggedOut();
+      // One-liner chaining: Logout -> Verify
+      await loginPage
+      .clickLogout()
+      .then(() => loginPage.expectLoggedOut());
       console.log('✓ Logged out successfully');
     });
   });

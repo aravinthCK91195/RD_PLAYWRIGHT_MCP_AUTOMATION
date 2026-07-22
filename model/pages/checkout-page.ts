@@ -84,9 +84,15 @@ export class CheckoutPage extends BasePage {
 
   async confirmOrder(): Promise<void> {
     const button = this.confirmOrderButton();
-    await expect(button).toBeVisible();
+    const submittingText = this.page.getByText(/submitting order information/i).first();
+
+    await expect(button).toBeVisible({ timeout: 20000 });
     await button.scrollIntoViewIfNeeded();
     await button.click({ force: true });
+
+    if (await submittingText.isVisible().catch(() => false)) {
+      await expect(submittingText).toBeHidden({ timeout: 20000 }).catch(() => {});
+    }
   }
 
   async expectOrderConfirmed(): Promise<void> {

@@ -1,6 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
-import { Routes,Products } from '../data/constants';
+import { Routes, Products } from '../data/constants';
+import { LoginPage } from './login-page';
+import { CartPage } from './cart-page';
 
 export class HomePage extends BasePage {
   
@@ -22,19 +24,20 @@ export class HomePage extends BasePage {
     await registerLink.click();
   }
 
-  async clickLogin(): Promise<void> {
+  // Chaining method - returns LoginPage for promise chaining
+  async clickLogin(): Promise<LoginPage> {
     const loginLink = await this.loginLink();
     await loginLink.click();
+    await this.page.waitForLoadState('domcontentloaded');
+    return new LoginPage(this.page);
   }
 
-  async clickShoppingCart(): Promise<void> {
+  // Chaining method - returns CartPage for promise chaining
+  async clickShoppingCart(): Promise<CartPage> {
     const shoppingCartLink = await this.shoppingCartLink();
     await shoppingCartLink.click();
-  }
-
-  async clickBooks(): Promise<void> {
-    // Backwards compatible helper that uses the Products enum
-    await this.selectProduct(Products.Books);
+    await this.page.waitForLoadState('domcontentloaded');
+    return new CartPage(this.page);
   }
 
   async selectFirstBook(): Promise<void> {

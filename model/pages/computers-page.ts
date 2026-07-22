@@ -1,9 +1,9 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 import { CartPage } from './cart-page';
-import { Routes } from '../data/constants';
+import { ComputerSubcategories, Products } from '../data/constants';
 
-export class BookPage extends BasePage {
+export class ComputersPage extends BasePage {
   
 
   constructor(page: Page) {
@@ -18,6 +18,23 @@ export class BookPage extends BasePage {
     return new CartPage(this.page);
   }
 
+  // Hover over Computers and select subcategory
+  // async selectComputerSubcategory(category: Products, subcategory: ComputerSubcategories): Promise<void> {
+  //   console.log(`Selecting computer subcategory: ${subcategory}`);
+  //   // Hover over the Computers navigation item to reveal the dropdown
+  //   const categoryLink = this.chooseProduct(category);
+  //   await expect(categoryLink).toBeVisible();
+  //   await categoryLink.hover();
+  //  // const computersNav = this.page.getByRole('link', { name: 'COMPUTERS' });
+    
+    
+  //   // Wait for the dropdown to appear and click the subcategory
+  //   await this.page.waitForTimeout(500); // Small delay for hover menu to appear
+  //   const subcategoryLink = this.page.getByRole('link', { name: subcategory }).first();
+  //   await expect(subcategoryLink).toBeVisible();
+  //   await subcategoryLink.click();
+  // }
+
   // Price Filter Locators
   async priceFilterInput(): Promise<Locator> {
     return this.page.locator('input[id*="price"]').first();
@@ -28,42 +45,42 @@ export class BookPage extends BasePage {
   }
 
   
-  async bookItems(): Promise<Locator> {
+  async computerItems(): Promise<Locator> {
     return this.page.locator('[class*="product-item"]');
   }
 
 
-  async selectBookButton(index: number = 0): Promise<Locator> {
-    const books = await this.bookItems();
-    return books.nth(index).locator('h2.product-title a, a.product-name, .product-title a').first();
+  async selectComputerButton(index: number = 0): Promise<Locator> {
+    const computers = await this.computerItems();
+    return computers.nth(index).locator('h2.product-title a, a.product-name, .product-title a').first();
   }
 
-  // Select first available book and return its destination URL
-  async selectFirstBook(): Promise<string | null> {
-    const firstBook = await this.selectBookButton(0);
-    await expect(firstBook).toBeVisible();
-    const href = await firstBook.getAttribute('href');
-    await firstBook.click();
+  // Select first available computer and return its destination URL
+  async selectFirstComputer(): Promise<string | null> {
+    const firstComputer = await this.selectComputerButton(0);
+    await expect(firstComputer).toBeVisible();
+    const href = await firstComputer.getAttribute('href');
+    await firstComputer.click();
     return href;
   }
 
-  // Select book by index
-  async selectBookByIndex(index: number): Promise<void> {
-    const book = await this.selectBookButton(index);
-    await expect(book).toBeVisible();
-    await book.click();
+  // Select computer by index
+  async selectComputerByIndex(index: number): Promise<void> {
+    const computer = await this.selectComputerButton(index);
+    await expect(computer).toBeVisible();
+    await computer.click();
   }
 
-  // Get number of books displayed
-  async getBookCount(): Promise<number> {
-    const books = await this.bookItems();
-    return await books.count();
+  // Get number of computers displayed
+  async getComputerCount(): Promise<number> {
+    const computers = await this.computerItems();
+    return await computers.count();
   }
 
-  // Verify books are loaded
-  async verifyBooksLoaded(): Promise<void> {
-    const books = await this.bookItems();
-    await expect(books.first()).toBeVisible();
+  // Verify computers are loaded
+  async verifyComputersLoaded(): Promise<void> {
+    const computers = await this.computerItems();
+    await expect(computers.first()).toBeVisible();
   }
 
   async verifyProductDetailsLoaded(expectedTitle?: string): Promise<void> {
@@ -119,37 +136,37 @@ export class BookPage extends BasePage {
     await expect(cartItem).toBeVisible();
   }
 
-  async getBookDetails(index: number = 0): Promise<{ title: string; price: string }> {
-    const titleLocator = await this.bookTitleInList(index);
-    const priceLocator = await this.bookPriceInList(index);
+  async getComputerDetails(index: number = 0): Promise<{ title: string; price: string }> {
+    const titleLocator = await this.computerTitleInList(index);
+    const priceLocator = await this.computerPriceInList(index);
     const title = (await titleLocator.textContent())?.trim() ?? '';
     const price = (await priceLocator.textContent())?.trim() ?? '';
 
     return { title, price };
   }
 
-  async bookTitleInList(index: number = 0): Promise<Locator> {
-    const books = await this.bookItems();
-    return books.nth(index).locator('h2.product-title a, .product-title a').first();
+  async computerTitleInList(index: number = 0): Promise<Locator> {
+    const computers = await this.computerItems();
+    return computers.nth(index).locator('h2.product-title a, .product-title a').first();
   }
 
-  async bookPriceInList(index: number = 0): Promise<Locator> {
-    const books = await this.bookItems();
-    return books
+  async computerPriceInList(index: number = 0): Promise<Locator> {
+    const computers = await this.computerItems();
+    return computers
       .nth(index)
       .locator('.prices .price.actual-price, .prices .price, .price')
       .first();
   }
 
-  // Get first book price
-  async getFirstBookPrice(): Promise<string> {
-    const priceLocator = await this.bookPriceInList(0);
+  // Get first computer price
+  async getFirstComputerPrice(): Promise<string> {
+    const priceLocator = await this.computerPriceInList(0);
     return (await priceLocator.textContent())?.trim() ?? '';
   }
 
-  // Get first book title
-  async getFirstBookTitle(): Promise<string> {
-    const titleLocator = await this.bookTitleInList(0);
+  // Get first computer title
+  async getFirstComputerTitle(): Promise<string> {
+    const titleLocator = await this.computerTitleInList(0);
     return (await titleLocator.textContent())?.trim() ?? '';
   }
 }

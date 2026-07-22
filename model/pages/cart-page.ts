@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
+import { CheckoutPage } from './checkout-page';
 import { Routes } from '../data/constants';
 
 export class CartPage extends BasePage {
@@ -77,11 +78,13 @@ export class CartPage extends BasePage {
     }
   }
 
-  async clickCheckout(): Promise<void> {
+  async clickCheckout(): Promise<CheckoutPage> {
     const button = this.checkoutButton();
     await expect(button).toBeVisible();
     await button.scrollIntoViewIfNeeded();
     await button.click({ force: true });
+    await this.page.waitForLoadState('domcontentloaded');
+    return new CheckoutPage(this.page);
   }
 
   async getCartItemTitle(productTitle: string): Promise<string> {

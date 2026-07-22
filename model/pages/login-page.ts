@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
+import { HomePage } from './home-page';
 import { Routes } from '../data/constants';
 
 export class LoginPage extends BasePage {
@@ -25,7 +26,7 @@ export class LoginPage extends BasePage {
     return this.page.getByRole('link', { name: 'Log out' });
   }
 
-  async login(username: string, password: string): Promise<void> {
+  async login(username: string, password: string): Promise<HomePage> {
     const emailInput = await this.emailInput();
     const passwordInput = await this.passwordInput();
     const loginButton = await this.loginButton();
@@ -33,6 +34,15 @@ export class LoginPage extends BasePage {
     await emailInput.fill(username);
     await passwordInput.fill(password);
     await loginButton.click();
+
+    // Wait for login to complete - logout link should be visible
+    await this.expectLoggedIn();
+    
+    // Wait for navigation to home page
+    await this.page.waitForURL(Routes.Home);
+    
+    // Return HomePage instance for promise chaining
+    return new HomePage(this.page);
   }
 
   async expectLoggedIn(): Promise<void> {

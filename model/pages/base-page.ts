@@ -1,22 +1,78 @@
 import { expect, Page } from '@playwright/test';
-import { Routes, Products } from '../data/constants';
+import { Routes, Products, ComputerSubcategories } from '../data/constants';
+import { CommonTests } from '../../utils/common';
 
-export class BasePage {
-  protected page: Page;
+export class BasePage extends CommonTests {
 
-  constructor(page: Page) {
-    this.page = page;
+  // Generic method for chaining between pages with <T>
+  protected async navigateTo<T extends BasePage>(PageClass: new (page: Page) => T): Promise<T> {
+    await this.page.waitForLoadState('domcontentloaded');
+    return new PageClass(this.page);
   }
 
-  async VerifyUrl( route: Routes): Promise<void> {
+  // Verify URL with chaining - overloaded for type safety
+  async VerifyUrl<T extends BasePage>(route: Routes, pageClassOrInstance: (new (page: Page) => T) | T): Promise<T>;
+  async VerifyUrl(route: Routes): Promise<void>;
+  async VerifyUrl<T extends BasePage>(route: Routes, pageClassOrInstance?: (new (page: Page) => T) | T): Promise<T | void> {
     console.log(`Verifying the landing URL: ${route}`);
     await expect(this.page).toHaveURL(route);
+    
+    if (!pageClassOrInstance) {
+      return; // No page provided - backward compatible
+    }
+
+    // Check if it's a page instance (has 'page' property) or a class constructor
+    if ('page' in pageClassOrInstance) {
+      // It's an instance - return it for chaining
+      return pageClassOrInstance as T;
+    } else {
+      // It's a class constructor - create and return new instance
+      return new (pageClassOrInstance as new (page: Page) => T)(this.page);
+    }
   }
 
-  async selectProduct(page:Page,product: Products): Promise<void> {
-  console.log(`Selecting product: ${product}`);
-  await this.page.getByRole('link', { name: product }).first().click();
+  
+
+  // Overload 1: Backward compatible signature used by existing tests.
+  async selectProduct(page: Page, product: Products): Promise<Page>;
+  // Overload 2: Chain-ready signature that returns a typed page object.
+  async selectProduct<T extends BasePage>(product: Products, pageClassOrInstance: (new (page: Page) => T) | T): Promise<T>;
+  async selectProduct<T extends BasePage>(
+    pageOrProduct: Page | Products,
+    productOrPageClass: Products | ((new (page: Page) => T) | T)
+  ): Promise<Page | T> {
+    const isLegacySignature = typeof pageOrProduct !== 'string';
+    const product = (isLegacySignature ? productOrPageClass : pageOrProduct) as Products;
+
+    console.log(`Selecting product: ${product}`);
+    await this.chooseProduct(product).click();
+    await this.page.waitForLoadState('domcontentloaded');
+
+    if (isLegacySignature) {
+      return pageOrProduct as Page;
+    }
+
+    const pageClassOrInstance = productOrPageClass as (new (page: Page) => T) | T;
+    if ('page' in pageClassOrInstance) {
+      return pageClassOrInstance as T;
+    }
+    return new (pageClassOrInstance as new (page: Page) => T)(this.page);
   }
+
+
+  async selectCategory(category: Products, subcategory: ComputerSubcategories): Promise<void> {
+      console.log(`Selecting computer subcategory: ${subcategory}`);
+      // Hover over the Computers navigation item to reveal the dropdown
+      const categoryLink = this.chooseProduct(category);
+      await expect(categoryLink).toBeVisible();
+      await categoryLink.hover();     
+      
+     
+      await this.page.waitForTimeout(500); 
+      const subcategoryLink = this.chooseProduct(subcategory);
+      await expect(subcategoryLink).toBeVisible();
+      await subcategoryLink.click();
+    }
   
   registerLink() {
     return this.page.getByRole('link', { name: 'Register' });
@@ -51,16 +107,22 @@ export class BasePage {
     await this.registerLink().click();
   }
 
-  async clickLogin() {
+  async clickLogin(): Promise<BasePage> {
     await this.loginLink().click();
+    await this.page.waitForLoadState('domcontentloaded');
+    return this;
   }
 
-  async clickShoppingCart() {
+  async clickShoppingCart(): Promise<BasePage> {
     await this.shoppingCartLink().click();
+    await this.page.waitForLoadState('domcontentloaded');
+    return this;
   }
 
-  async clickWishlist() {
+  async clickWishlist(): Promise<BasePage> {
     await this.wishlistLink().click();
+    await this.page.waitForLoadState('domcontentloaded');
+    return this;
   }
 
   async enterSearchText(productName: string) {

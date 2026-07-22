@@ -1,6 +1,8 @@
 import { Page, expect } from '@playwright/test';
+import { Routes, Products, ComputerSubcategories } from '../model/data/constants';
+import type { Locator } from '@playwright/test';
 
-export class BaseTests {
+export class CommonTests {
   protected page: Page;
 
   constructor(page: Page) {
@@ -62,4 +64,9 @@ export class BaseTests {
   async closePage(): Promise<void> {
     await this.page.close();
   }
+
+  chooseProduct(product: Products | ComputerSubcategories): Locator {
+    return this.page.getByRole('link', { name: product }).first();
+  }
 }
+    
